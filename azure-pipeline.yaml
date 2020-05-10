@@ -18,7 +18,7 @@ stages:
         targetType: inline
         script: printenv
 
-- stage: 'IntegrationTest1'
+- stage: 'DeployToDev'
   displayName: 'Deploy to the dev environment'
   dependsOn: Build
   condition: |
@@ -31,7 +31,53 @@ stages:
   - deployment: Deploy
     pool:
       vmImage: 'ubuntu-16.04'
-    environment: dev
+    environment: integration-dev
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: Bash@3
+            inputs:
+              targetType: inline
+              script: printenv
+- stage: 'IntegrationTestDev'
+  displayName: 'Integration tests on Dev'
+  dependsOn: 'DeployToDev'
+  jobs: 
+  - job: 'StartTests'
+    displayName: 'Start Tests'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: printenv
+- stage: 'PerformanceTestDev'
+  displayName: 'Performance tests on Dev'
+  dependsOn: 'DeployToDev'
+  jobs: 
+  - job: 'StartPerfTests'
+    displayName: 'Start Performance Tests'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: printenv
+- stage: 'DeployToStaging'
+  displayName: 'Deploy to the Staging environment'
+  dependsOn: 
+    - PerformanceTestDev
+    - IntegrationTestDev
+  jobs:
+  - deployment: DeployStating
+    pool:
+      vmImage: 'ubuntu-16.04'
+    environment: staging
     variables:
     - group: Release
     strategy:
