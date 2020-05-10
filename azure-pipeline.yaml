@@ -18,7 +18,7 @@ stages:
         targetType: inline
         script: printenv
 
-- stage: 'Integration Test 1'
+- stage: 'IntegrationTest1'
   displayName: 'Deploy to the dev environment'
   dependsOn: Build
   condition: |
